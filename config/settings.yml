@@ -1,4 +1,4 @@
 plugins:
-  discourse_plugin_template_enabled:
+  discourse_sms_authentication_enabled:
     default: false
     client: true

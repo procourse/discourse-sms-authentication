@@ -5,7 +5,7 @@
 # license: https://github.com/procourse/discourse-plugin-template/blob/master/LICENSE
 # url: https://github.com/procourse/discourse-plugin-template
 
-enabled_site_setting :discourse_plugin_template_enabled
+enabled_site_setting :discourse_sms_authentication_enabled
 
 register_asset 'stylesheets/discourse-plugin-template.scss'
 
