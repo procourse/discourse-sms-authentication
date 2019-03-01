@@ -1,0 +1,10 @@
+{{#if siteSettings.discourse_sms_authentication_enabled}}
+    <div class="control-group time-tracker">
+        <label class="control-label">Phone Number</label>
+        <div class="controls">
+            <label class='text-label'>
+                 {{input type="text" class="input-xxlarge" value=model.custom_fields.phone_number}}
+            </label>
+        </div>
+    </div>
+{{/if}}
