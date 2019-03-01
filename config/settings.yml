@@ -2,3 +2,12 @@ plugins:
   discourse_sms_authentication_enabled:
     default: false
     client: true
+  discourse_sms_authentication_provider:
+    client: false
+    type: enum
+    default: "Braze"
+    choices:
+      - "Braze"
+  discourse_sms_authentication_api_key:
+    default: ""
+    client: false
