@@ -1,27 +1,70 @@
-import { withPluginApi } from "discourse/lib/plugin-api";
-import PreferencesAccount from "discourse/controllers/preferences/account";
-import { observes } from "ember-addons/ember-computed-decorators";
+import {withPluginApi} from 'discourse/lib/plugin-api';
+import {observes} from 'ember-addons/ember-computed-decorators';
+import PreferencesEmail from 'discourse/controllers/preferences/email';
+import {propertyEqual} from 'discourse/lib/computed';
+import User from 'discourse/models/user';
+import {ajax} from 'discourse/lib/ajax';
+import {userPath} from 'discourse/lib/url';
 
 function initialize_discourse_sms_authentication(api) {
-PreferencesAccount.reopen({
-        saveAttrNames: ["name", "title", "custom_fields"],
-	setPhoneNumber(obj) {
-          obj.set("phone_number", this.get("model.custom_fields.phone_number"));
-        },
+  User.reopen({
+    changeEmail(email, phone_number) {
+      return ajax(userPath(`${this.get('username_lower')}/preferences/email`), {
+        type: 'PUT',
+        data: {email, phone_number},
+      });
+    },
+  });
+  PreferencesEmail.reopen({
+    newPhoneNumber: function() {
+      return this.get('currentUser.phone_number') || null;
+    }.property(),
+    unchanged: propertyEqual('newPhoneNumber', 'currentUser.phone_number'),
+    newPhoneNumberEmpty: Ember.computed.empty('newPhoneNumber'),
+    saveDisabled: Ember.computed.or(
+      'saving',
+      'newPhoneNumberEmpty',
+      'taken',
+      'unchanged',
+      'invalidEmail',
+    ),
+    actions: {
+      changeEmail() {
+        const self = this;
+        this.set('saving', true);
 
-	_updatePhoneNumber: function() {
-	    if (!this.siteSettings.discourse_sms_authentication_enabled) return;
-            if (this.get("saved")) {
-	        this.setPhoneNumber(this.get("model"));
-	    }
-	}.observes("saved")
-});
+        this.set('newEmail', `discourse+${this.get('newPhoneNumber')}@tala.co`);
+        this.changePhoneNumber(this.get('model'));
+        console.log(this.get('model'));
+        return this.get('model')
+          .changeEmail(this.get('newEmail'), this.get('newPhoneNumber'))
+          .then(
+            () => self.set('success', true),
+            e => {
+              self.setProperties({error: true, saving: false});
+              if (
+                e.jqXHR.responseJSON &&
+                e.jqXHR.responseJSON.errors &&
+                e.jqXHR.responseJSON.errors[0]
+              ) {
+                self.set('errorMessage', e.jqXHR.responseJSON.errors[0]);
+              } else {
+                self.set('errorMessage', I18n.t('user.change_email.error'));
+              }
+            },
+          );
+      },
+    },
+    changePhoneNumber(obj) {
+      obj.set('phone_number', this.get('newPhoneNumber'));
+    },
+  });
 }
 
 export default {
-  name: "discourse-sms-authentication",
+  name: 'discourse-sms-authentication',
 
   initialize() {
-    withPluginApi("0.8.24", initialize_discourse_sms_authentication);
-  }
+    withPluginApi('0.8.24', initialize_discourse_sms_authentication);
+  },
 };

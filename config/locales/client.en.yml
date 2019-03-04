@@ -1,3 +1,7 @@
 en:
   js:
-    discourse_plugin_template:
+    sms_authentication:
+      change_number:
+        title: "Change Phone Number"
+      phone_number:
+        title: "Phone Number"
