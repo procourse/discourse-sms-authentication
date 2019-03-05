@@ -5,6 +5,8 @@ import {propertyEqual} from 'discourse/lib/computed';
 import User from 'discourse/models/user';
 import {ajax} from 'discourse/lib/ajax';
 import {userPath} from 'discourse/lib/url';
+import InputValidation from "discourse/models/input-validation";
+import computed from "ember-addons/ember-computed-decorators";
 
 function initialize_discourse_sms_authentication(api) {
   User.reopen({
@@ -26,8 +28,22 @@ function initialize_discourse_sms_authentication(api) {
       'newPhoneNumberEmpty',
       'taken',
       'unchanged',
-      'invalidEmail',
+      'invalidPhoneNumber',
     ),
+    @computed("newPhoneNumber")
+    invalidPhoneNumber(newPhoneNumber){
+      const re = /^[0-9]*$/;
+      return !re.test(newPhoneNumber);
+    },
+    @computed("invalidPhoneNumber")
+    phoneNumberValidation(invalidPhoneNumber){
+      if (invalidPhoneNumber){
+        return InputValidation.create({
+	  failed: true,
+          reason: I18n.t("sms_authentication.phone_number.invalid")
+	});
+      }
+    },
     actions: {
       changeEmail() {
         const self = this;
@@ -35,7 +51,6 @@ function initialize_discourse_sms_authentication(api) {
 
         this.set('newEmail', `discourse+${this.get('newPhoneNumber')}@tala.co`);
         this.changePhoneNumber(this.get('model'));
-        console.log(this.get('model'));
         return this.get('model')
           .changeEmail(this.get('newEmail'), this.get('newPhoneNumber'))
           .then(

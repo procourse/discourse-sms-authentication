@@ -12,3 +12,4 @@ en:
         title: "Change Phone Number"
       phone_number:
         title: "Phone Number"
+        invalid: "Invalid Phone Number (numbers only)"
