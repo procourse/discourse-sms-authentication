@@ -11,6 +11,9 @@ register_asset 'stylesheets/discourse-sms-authentication.scss'
 DiscoursePluginRegistry.serialized_current_user_fields << 'phone_number'
 
 after_initialize do
+  # Turn off sign in by email
+  SiteSetting.enable_local_logins_via_email = false
+
   User.register_custom_field_type('phone_number', :text)
 
   require_dependency 'user'

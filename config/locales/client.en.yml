@@ -1,5 +1,12 @@
 en:
   js:
+    user:
+      email:
+        title: "Phone Number"
+      password:
+        title: "Send Password Reset Message"
+      change_email:
+        success: "We've sent a message to that number. Please follow the confirmation instructions."
     sms_authentication:
       change_number:
         title: "Change Phone Number"
