@@ -5,8 +5,10 @@ import {propertyEqual} from 'discourse/lib/computed';
 import User from 'discourse/models/user';
 import {ajax} from 'discourse/lib/ajax';
 import {userPath} from 'discourse/lib/url';
-import InputValidation from "discourse/models/input-validation";
-import computed from "ember-addons/ember-computed-decorators";
+import InputValidation from 'discourse/models/input-validation';
+import computed from 'ember-addons/ember-computed-decorators';
+import CreateAccount from 'discourse/controllers/create-account';
+import Singleton from "discourse/mixins/singleton";
 
 function initialize_discourse_sms_authentication(api) {
   User.reopen({
@@ -16,6 +18,25 @@ function initialize_discourse_sms_authentication(api) {
         data: {email, phone_number},
       });
     },
+  });
+  User.reopen(Singleton, {
+  
+    createAccount(attrs) {
+	    debugger;
+    return ajax(userPath(), {
+      data: {
+        name: attrs.accountName,
+        email: attrs.accountEmail,
+	phone_number: attrs.accountPhone,
+        password: attrs.accountPassword,
+        username: attrs.accountUsername,
+        password_confirmation: attrs.accountPasswordConfirm,
+        challenge: attrs.accountChallenge,
+        user_fields: attrs.userFields
+      },
+      type: "POST"
+    });
+}
   });
   PreferencesEmail.reopen({
     newPhoneNumber: function() {
@@ -30,20 +51,6 @@ function initialize_discourse_sms_authentication(api) {
       'unchanged',
       'invalidPhoneNumber',
     ),
-    @computed("newPhoneNumber")
-    invalidPhoneNumber(newPhoneNumber){
-      const re = /^[0-9]*$/;
-      return !re.test(newPhoneNumber);
-    },
-    @computed("invalidPhoneNumber")
-    phoneNumberValidation(invalidPhoneNumber){
-      if (invalidPhoneNumber){
-        return InputValidation.create({
-	  failed: true,
-          reason: I18n.t("sms_authentication.phone_number.invalid")
-	});
-      }
-    },
     actions: {
       changeEmail() {
         const self = this;
@@ -72,6 +79,114 @@ function initialize_discourse_sms_authentication(api) {
     },
     changePhoneNumber(obj) {
       obj.set('phone_number', this.get('newPhoneNumber'));
+    },
+  });
+  CreateAccount.reopen({
+    accountEmailSMS: function() {
+      this.set("accountEmail", `discourse+${this.get("accountPhone")}@tala.co`);
+    }.observes("accountPhone"),
+    @computed("accountPhone")
+    invalidPhoneNumber(accountPhone){
+      const re = /^[0-9]*$/;
+      return !re.test(accountPhone);
+    },
+    @computed("invalidPhoneNumber")
+    phoneValidation(invalidPhoneNumber){
+      if (Ember.isEmpty(this.get("accountPhone"))){
+        return InputValidation.create({
+	  failed: true
+	});
+      }
+      if (invalidPhoneNumber){
+        return InputValidation.create({
+	  failed: true,
+	  reason: I18n.t("sms_authentication.phone_number.invalid")
+	});
+      }
+      else {
+        return InputValidation.create({
+	  ok: true,
+          reason: I18n.t("sms_authentication.phone_number.valid")
+	}); 
+      }
+    },
+    actions: {
+      createAccount() {
+        const attrs = this.getProperties(
+          'accountName',
+          'accountEmail',
+          'accountPhone',
+          'accountPassword',
+          'accountUsername',
+          'accountPasswordConfirm',
+          'accountChallenge',
+        );
+        const userFields = this.get('userFields');
+        const destinationUrl = this.get('authOptions.destination_url');
+
+        if (!Ember.isEmpty(destinationUrl)) {
+          $.cookie('destination_url', destinationUrl, {path: '/'});
+        }
+
+        // Add the userfields to the data
+        if (!Ember.isEmpty(userFields)) {
+          attrs.userFields = {};
+          userFields.forEach(
+            f => (attrs.userFields[f.get('field.id')] = f.get('value')),
+          );
+        }
+
+        this.set('formSubmitted', true);
+        return Discourse.User.createAccount(attrs).then(
+          result => {
+            this.set('isDeveloper', false);
+            if (result.success) {
+              // Trigger the browser's password manager using the hidden static login form:
+              const $hidden_login_form = $('#hidden-login-form');
+              $hidden_login_form
+                .find('input[name=username]')
+                .val(attrs.accountUsername);
+              $hidden_login_form
+                .find('input[name=password]')
+                .val(attrs.accountPassword);
+              $hidden_login_form
+                .find('input[name=redirect]')
+                .val(userPath('account-created'));
+              $hidden_login_form.submit();
+            } else {
+              this.flash(
+                result.message || I18n.t('create_account.failed'),
+                'error',
+              );
+              if (result.is_developer) {
+                this.set('isDeveloper', true);
+              }
+              if (
+                result.errors &&
+                result.errors.email &&
+                result.errors.email.length > 0 &&
+                result.values
+              ) {
+                this.get('rejectedEmails').pushObject(result.values.email);
+              }
+              if (
+                result.errors &&
+                result.errors.password &&
+                result.errors.password.length > 0
+              ) {
+                this.get('rejectedPasswords').pushObject(attrs.accountPassword);
+              }
+              this.set('formSubmitted', false);
+              $.removeCookie('destination_url');
+            }
+          },
+          () => {
+            this.set('formSubmitted', false);
+            $.removeCookie('destination_url');
+            return this.flash(I18n.t('create_account.failed'), 'error');
+          },
+        );
+      },
     },
   });
 }
