@@ -3,13 +3,15 @@ en:
     user:
       email:
         title: "Phone Number"
-      password:
-        title: "Send Password Reset Message"
+      change_password:
+        action: "Send Password Reset Message"
       change_email:
         success: "We've sent a message to that number. Please follow the confirmation instructions."
+        error: "There was an error changing your phone number. Maybe that number is already in use?"
     sms_authentication:
       change_number:
         title: "Change Phone Number"
       phone_number:
         title: "Phone Number"
+        valid: "Phone number valid!"
         invalid: "Invalid Phone Number (numbers only)"
