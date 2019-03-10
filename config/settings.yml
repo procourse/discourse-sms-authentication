@@ -11,3 +11,6 @@ plugins:
   discourse_sms_authentication_api_key:
     default: ""
     client: false
+  discourse_sms_authentication_email_domain:
+    default: ""
+    client: true 

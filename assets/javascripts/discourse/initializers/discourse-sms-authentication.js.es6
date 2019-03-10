@@ -2,13 +2,12 @@ import {withPluginApi} from 'discourse/lib/plugin-api';
 import {observes} from 'ember-addons/ember-computed-decorators';
 import PreferencesEmail from 'discourse/controllers/preferences/email';
 import {propertyEqual} from 'discourse/lib/computed';
-import User from 'discourse/models/user';
+import User from "discourse/models/user";
 import {ajax} from 'discourse/lib/ajax';
 import {userPath} from 'discourse/lib/url';
 import InputValidation from 'discourse/models/input-validation';
 import computed from 'ember-addons/ember-computed-decorators';
 import CreateAccount from 'discourse/controllers/create-account';
-import Singleton from "discourse/mixins/singleton";
 
 function initialize_discourse_sms_authentication(api) {
   User.reopen({
@@ -23,6 +22,9 @@ function initialize_discourse_sms_authentication(api) {
     newPhoneNumber: function() {
       return this.get('currentUser.phone_number') || null;
     }.property(),
+    newEmailSMS: function(){
+      this.set('newEmail', `discourse+${this.get("newPhoneNumber")}@${Discourse.SiteSettings.discourse_sms_authentication_email_domain}`);
+    }.observes("newPhoneNumber"),
     unchanged: propertyEqual('newPhoneNumber', 'currentUser.phone_number'),
     newPhoneNumberEmpty: Ember.computed.empty('newPhoneNumber'),
     saveDisabled: Ember.computed.or(
@@ -37,7 +39,6 @@ function initialize_discourse_sms_authentication(api) {
         const self = this;
         this.set('saving', true);
 
-        this.set('newEmail', `discourse+${this.get('newPhoneNumber')}@tala.co`);
         this.changePhoneNumber(this.get('model'));
         return this.get('model')
           .changeEmail(this.get('newEmail'), this.get('newPhoneNumber'))
@@ -64,7 +65,7 @@ function initialize_discourse_sms_authentication(api) {
   });
   CreateAccount.reopen({
     accountEmailSMS: function() {
-      this.set("accountEmail", `discourse+${this.get("accountPhone")}@tala.co`);
+      this.set("accountEmail", `discourse+${this.get("accountPhone")}@${Discourse.SiteSettings.discourse_sms_authentication_email_domain}`);
     }.observes("accountPhone"),
     @computed("accountPhone")
     invalidPhoneNumber(accountPhone){
