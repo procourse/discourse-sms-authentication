@@ -61,11 +61,11 @@ after_initialize do
   class ::UsersController
       after_action :add_phone_number, only: [:create]
       def add_phone_number
-        params.require(:phone_number)
-        user = User.find_by(email: "discourse+#{params[:phone_number]}@tala.co")
+
+        user = User.find_by(username: params[:username]) 
 
         if user
-          user.custom_fields['phone_number'] = params[:phone_number]
+          user.custom_fields['phone_number'] = params[:user_fields][:phone_number]
           user.save!
         end
       end

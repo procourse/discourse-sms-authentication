@@ -19,25 +19,6 @@ function initialize_discourse_sms_authentication(api) {
       });
     },
   });
-  User.reopen(Singleton, {
-  
-    createAccount(attrs) {
-	    debugger;
-    return ajax(userPath(), {
-      data: {
-        name: attrs.accountName,
-        email: attrs.accountEmail,
-	phone_number: attrs.accountPhone,
-        password: attrs.accountPassword,
-        username: attrs.accountUsername,
-        password_confirmation: attrs.accountPasswordConfirm,
-        challenge: attrs.accountChallenge,
-        user_fields: attrs.userFields
-      },
-      type: "POST"
-    });
-}
-  });
   PreferencesEmail.reopen({
     newPhoneNumber: function() {
       return this.get('currentUser.phone_number') || null;
@@ -115,7 +96,6 @@ function initialize_discourse_sms_authentication(api) {
         const attrs = this.getProperties(
           'accountName',
           'accountEmail',
-          'accountPhone',
           'accountPassword',
           'accountUsername',
           'accountPasswordConfirm',
@@ -128,14 +108,18 @@ function initialize_discourse_sms_authentication(api) {
           $.cookie('destination_url', destinationUrl, {path: '/'});
         }
 
+          attrs.userFields = {};
         // Add the userfields to the data
         if (!Ember.isEmpty(userFields)) {
-          attrs.userFields = {};
           userFields.forEach(
             f => (attrs.userFields[f.get('field.id')] = f.get('value')),
           );
         }
-
+	// pass phone_number to back end via user fields
+	const phoneField = {
+            phone_number: this.get('accountPhone')
+	  };
+	$.extend(attrs.userFields, phoneField);      
         this.set('formSubmitted', true);
         return Discourse.User.createAccount(attrs).then(
           result => {
