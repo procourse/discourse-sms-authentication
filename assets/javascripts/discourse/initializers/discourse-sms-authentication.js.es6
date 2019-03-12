@@ -11,8 +11,16 @@ import CreateAccount from 'discourse/controllers/create-account';
 import AccountCreatedEditEmail from 'discourse/controllers/account-created-edit-email';
 import { changeEmail } from "discourse/lib/user-activation";
 import { popupAjaxError } from "discourse/lib/ajax-error";
+import PreloadStore from "preload-store";
 
 function initialize_discourse_sms_authentication(api) {
+  // Set for account creation
+  if (PreloadStore.get("accountCreated")){
+    const accountCreated = PreloadStore.get("accountCreated");
+    accountCreated.message = "<p>You're almost done! We sent an activation message to your phone number. Please follow the instructions in the message to activate your account.</p>";
+    PreloadStore.store("accountCreated", accountCreated);
+  }
+
   User.reopen({
     changeEmail(email, phone_number) {
       return ajax(userPath(`${this.get('username_lower')}/preferences/email`), {
