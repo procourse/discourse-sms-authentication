@@ -8,6 +8,9 @@ import {userPath} from 'discourse/lib/url';
 import InputValidation from 'discourse/models/input-validation';
 import computed from 'ember-addons/ember-computed-decorators';
 import CreateAccount from 'discourse/controllers/create-account';
+import AccountCreatedEditEmail from 'discourse/controllers/account-created-edit-email';
+import { changeEmail } from "discourse/lib/user-activation";
+import { popupAjaxError } from "discourse/lib/ajax-error";
 
 function initialize_discourse_sms_authentication(api) {
   User.reopen({
@@ -173,6 +176,25 @@ function initialize_discourse_sms_authentication(api) {
         );
       },
     },
+  });
+  AccountCreatedEditEmail.reopen({
+    newPhoneNumber: null,
+    newEmailSMS: function() {
+      this.set("newEmail", `discourse+${this.get("newPhoneNumber")}@${Discourse.SiteSettings.discourse_sms_authentication_email_domain}`);
+    }.observes("newPhoneNumber"),
+    actions: {
+      changeEmail() {
+        const email = this.get("newEmail");
+	const phone_number = this.get("newPhoneNumber");
+	changeEmail({email, phone_number})
+	  .then(() => {
+	    this.set("accountCreated.email", email);
+            this.transitionToRoute("account-created.resent");
+	  })
+	  .catch(popupAjaxError);
+      }
+    }
+    
   });
 }
 

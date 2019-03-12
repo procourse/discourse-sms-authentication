@@ -1,3 +1,6 @@
 en:
   site_settings: 
-    discourse_plugin_template_enabled: 'Enable the Discourse Plugin Template plugin.'
+    discourse_sms_authentication_enabled: "Enable Discourse SMS Authentication Plugin"
+    discourse_sms_authentication_provider: "Select the SMS provider you wish to use"
+    discourse_sms_authentication_api_key: "Enter in the API key for your selected authentication provider"
+    discourse_sms_authentication_email_domain: "Enter the domain to which Discourse emails should be routed. Emails will be sent to discourse+phone_number@email_domain (i.e. discourse+123456789@example.com)."

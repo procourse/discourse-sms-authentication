@@ -69,5 +69,25 @@ after_initialize do
           user.save!
         end
       end
+      module SmsAuthentication
+        def update_activation_email
+          original = super
+
+          if params[:username].present?
+            user = User.find_by_username_or_email(params[:username])
+            raise Discourse::InvalidAccess.new unless user.present?
+            raise Discourse::InvalidAccess.new unless user.confirm_password?(params[:password])
+          elsif user_key = session[SessionController::ACTIVATE_USER_KEY]
+            user = User.where(id: user_key.to_i).first
+          end
+
+          if user
+            user.custom_fields['phone_number'] = params[:phone_number]
+            user.save!
+          end
+          original
+        end
+      end
+      prepend SmsAuthentication
   end
 end

@@ -1,5 +1,17 @@
 en:
   js:
+    login:
+      activate_email: "You're almost done! We sent an activation message to your phone number. Please follow the instructions in the message to activate your account."
+      resend_title: "Resend Activation Message"
+      resend_activation_email: "Click here to send the activation message again."
+      awaiting_activation: "Your account is awaiting activation. Use the forgot password link to issue another activation message."
+      not_activated: "You can't log in yet. We previously sent an activation message. Please follow the instructions in the message to activate your account."
+      provide_new_email: "Provide a new phone number and we'll resend your confirmation message." 
+      submit_new_email: "Update Phone Number"
+      sent_activation_email_again: "We sent another activation message to your phone number."
+      sent_activation_email_again_generic: "We sent another activation message to your phone number."
+    invite:
+      confirm_email: "You're almost done! We sent an activation message to your phone number. Please follow the instructions in the message to activate your account."
     user:
       email:
         title: "Phone Number"
