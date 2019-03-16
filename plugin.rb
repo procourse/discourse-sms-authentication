@@ -8,6 +8,7 @@
 enabled_site_setting :discourse_sms_authentication_enabled
 
 gem 'phonelib', '0.6.29'
+gem 'twilio-ruby', '5.21.2'
 
 register_asset 'stylesheets/discourse-sms-authentication.scss'
 DiscoursePluginRegistry.serialized_current_user_fields << 'phone_number'
@@ -16,6 +17,7 @@ after_initialize do
   # Turn off sign in by email
   SiteSetting.enable_local_logins_via_email = false
 
+  # Add phone number to user model and serializer
   User.register_custom_field_type('phone_number', :text)
   register_editable_user_custom_field :phone_number
 
@@ -57,9 +59,11 @@ after_initialize do
     prepend SmsAuthentication
   end
 
+  # Add phone number save on user creation
   require_dependency 'users_controller'
   class ::UsersController
       after_action :add_phone_number, only: [:create]
+      after_action :update_phone_number, only: [:update_activation_email]
       def add_phone_number
 
         user = User.find_by(username: params[:username]) 
@@ -69,25 +73,24 @@ after_initialize do
           user.save!
         end
       end
-      module SmsAuthentication
-        def update_activation_email
-          original = super
+      def update_phone_number
 
-          if params[:username].present?
-            user = User.find_by_username_or_email(params[:username])
-            raise Discourse::InvalidAccess.new unless user.present?
-            raise Discourse::InvalidAccess.new unless user.confirm_password?(params[:password])
-          elsif user_key = session[SessionController::ACTIVATE_USER_KEY]
-            user = User.where(id: user_key.to_i).first
-          end
+        if params[:username].present?
+          user = User.find_by_username_or_email(params[:username])
+          raise Discourse::InvalidAccess.new unless user.present?
+          raise Discourse::InvalidAccess.new unless user.confirm_password?(params[:password])
+        elsif user_key = session[SessionController::ACTIVATE_USER_KEY]
+          user = User.where(id: user_key.to_i).first
+        end
 
-          if user
-            user.custom_fields['phone_number'] = params[:phone_number]
-            user.save!
-          end
-          original
+        if user
+          user.custom_fields['phone_number'] = params[:phone_number]
+          byebug
+          user.save!
         end
       end
-      prepend SmsAuthentication
   end
+
+  # Send SMS Messages on Discourse Events
+  
 end
