@@ -5,10 +5,16 @@ plugins:
   discourse_sms_authentication_provider:
     client: false
     type: enum
-    default: "Braze"
+    default: "Twilio"
     choices:
-      - "Braze"
-  discourse_sms_authentication_api_key:
+      - "Twilio"
+  discourse_sms_authentication_account_sid:
+    default: ""
+    client: false
+  discourse_sms_authentication_authtoken:
+    default: ""
+    client: false
+  discourse_sms_authentication_send_phone:
     default: ""
     client: false
   discourse_sms_authentication_email_domain:
