@@ -13,6 +13,8 @@ gem 'twilio-ruby', '5.21.2'
 register_asset 'stylesheets/discourse-sms-authentication.scss'
 DiscoursePluginRegistry.serialized_current_user_fields << 'phone_number'
 
+load File.expand_path('../lib/sms_authentication/sms_provider.rb', __FILE__)
+
 after_initialize do
   # Turn off sign in by email
   SiteSetting.enable_local_logins_via_email = false
@@ -72,6 +74,7 @@ after_initialize do
           user.custom_fields['phone_number'] = params[:user_fields][:phone_number]
           user.save!
         end
+        DiscourseEvent.trigger(:sms_user_created, user)
       end
       def update_phone_number
 
@@ -85,12 +88,26 @@ after_initialize do
 
         if user
           user.custom_fields['phone_number'] = params[:phone_number]
-          byebug
           user.save!
         end
+        DiscourseEvent.trigger(:sms_user_created, user)
       end
   end
 
   # Send SMS Messages on Discourse Events
+  DiscourseEvent.on(:sms_user_created) do |user|
+    # Build message content with email token
+    activation_url = "https://#{Discourse.current_hostname}/u/activate-account/#{user.email_tokens.first.token}"
+    message = "Activate your #{SiteSetting.title} account: #{activation_url}"
+    
+    # Send SMS using provider
+    sms = SmsAuthentication::SmsProvider::Provider.new
+    sms.send_sms(user.custom_fields['phone_number'], message)
+  end
+  
+  DiscourseEvent.on(:post_notification_alert) do |user, payload|
+    #byebug
+  end
+
   
 end
