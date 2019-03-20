@@ -55,6 +55,7 @@ after_initialize do
 
         user.custom_fields['phone_number'] = params[:phone_number]
         user.save!
+        DiscourseEvent.trigger(:sms_user_created, user)
         original
       end
     end
@@ -97,9 +98,9 @@ after_initialize do
   # Send SMS Messages on Discourse Events
   DiscourseEvent.on(:sms_user_created) do |user|
     # Build message content with email token
-    activation_url = "https://#{Discourse.current_hostname}/u/activate-account/#{user.email_tokens.first.token}"
+    activation_url = "https://#{Discourse.current_hostname}/u/activate-account/#{user.email_tokens.last.token}"
     message = "Activate your #{SiteSetting.title} account: #{activation_url}"
-    
+    puts user.email_tokens.last.token 
     # Send SMS using provider
     sms = SmsAuthentication::SmsProvider::Provider.new
     sms.send_sms(user.custom_fields['phone_number'], message)
