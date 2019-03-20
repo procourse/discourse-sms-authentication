@@ -20,7 +20,7 @@ module SmsAuthentication
             to: "+#{user_phone_number}",
             body: message.to_s
           )
-        rescue Twilio::Rest::TwilioError => e
+        rescue Twilio::REST::TwilioError => e
           puts e.message
         end
       end

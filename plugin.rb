@@ -106,7 +106,23 @@ after_initialize do
   end
   
   DiscourseEvent.on(:post_notification_alert) do |user, payload|
-    #byebug
+    # Build message content with notification info
+    case payload[:notification_type]
+    when 1
+      type = 'Mention'
+    when 2
+      type = 'Reply'
+    when 6
+      type = 'Private Message'
+    else
+      return
+    end
+    url = "https://#{Discourse.current_hostname}#{payload[:post_url]}"
+    message = "New #{type} from #{payload[:username]}: #{url}"
+
+    # Send SMS using provider
+    sms = SmsAuthentication::SmsProvider::Provider.new
+    sms.send_sms(user.custom_fields['phone_number'], message)
   end
 
   
