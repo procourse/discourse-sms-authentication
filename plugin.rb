@@ -47,15 +47,16 @@ after_initialize do
       def update
         original = super
 
-        params.require(:phone_number)
         user = User.find(current_user.id)
 
         RateLimiter.new(user, "change-phone-hr-#{request.remote_ip}", 6, 1.hour).performed!
         RateLimiter.new(user, "change-phone-min-#{request.remote_ip}", 3, 1.minute).performed!
 
-        user.custom_fields['phone_number'] = params[:phone_number]
-        user.save!
-        DiscourseEvent.trigger(:sms_user_created, user)
+        if params[:phone_number]
+          user.custom_fields['phone_number'] = params[:phone_number]
+          user.save!
+          DiscourseEvent.trigger(:sms_user_updated, user)
+        end
         original
       end
     end
@@ -99,6 +100,15 @@ after_initialize do
   DiscourseEvent.on(:sms_user_created) do |user|
     # Build message content with email token
     activation_url = "https://#{Discourse.current_hostname}/u/activate-account/#{user.email_tokens.last.token}"
+    message = "Activate your #{SiteSetting.title} account: #{activation_url}"
+
+    # Send SMS using provider
+    sms = SmsAuthentication::SmsProvider::Provider.new
+    sms.send_sms(user.custom_fields['phone_number'], message)
+  end
+  DiscourseEvent.on(:sms_user_updated) do |user|
+    # Build message content with email token
+    activation_url = "https://#{Discourse.current_hostname}/u/authorize-email/#{user.email_tokens.last.token}"
     message = "Activate your #{SiteSetting.title} account: #{activation_url}"
 
     # Send SMS using provider
