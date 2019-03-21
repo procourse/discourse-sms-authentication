@@ -99,7 +99,7 @@ after_initialize do
   # Send SMS Messages on Discourse Events
   DiscourseEvent.on(:sms_user_created) do |user|
     # Build message content with email token
-    activation_url = "https://#{Discourse.current_hostname}/u/activate-account/#{user.email_tokens.last.token}"
+    activation_url = "#{Discourse.base_protocol}://#{Discourse.current_hostname}/u/activate-account/#{user.email_tokens.last.token}"
     message = "Activate your #{SiteSetting.title} account: #{activation_url}"
 
     # Send SMS using provider
@@ -108,7 +108,7 @@ after_initialize do
   end
   DiscourseEvent.on(:sms_user_updated) do |user|
     # Build message content with email token
-    activation_url = "https://#{Discourse.current_hostname}/u/authorize-email/#{user.email_tokens.last.token}"
+    activation_url = "#{Discourse.base_protocol}://#{Discourse.current_hostname}/u/authorize-email/#{user.email_tokens.last.token}"
     message = "Activate your #{SiteSetting.title} account: #{activation_url}"
 
     # Send SMS using provider
@@ -128,7 +128,7 @@ after_initialize do
     else
       return
     end
-    url = "https://#{Discourse.current_hostname}#{payload[:post_url]}"
+    url = "#{Discourse.base_protocol}://#{Discourse.current_hostname}#{payload[:post_url]}"
     message = "New #{type} from #{payload[:username]}: #{url}"
 
     # Send SMS using provider
