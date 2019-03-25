@@ -109,7 +109,7 @@ after_initialize do
   DiscourseEvent.on(:sms_user_updated) do |user|
     # Build message content with email token
     activation_url = "#{Discourse.base_protocol}://#{Discourse.current_hostname}/u/authorize-email/#{user.email_tokens.last.token}"
-    message = "Activate your #{SiteSetting.title} account: #{activation_url}"
+    message = "#{I18n.t('sms_authentication.sms_messages.activation', title: SiteSetting.title)}#{activation_url}"
 
     # Send SMS using provider
     sms = SmsAuthentication::SmsProvider::Provider.new
@@ -120,16 +120,16 @@ after_initialize do
     # Build message content with notification info
     case payload[:notification_type]
     when 1
-      type = 'Mention'
+      type = I18n.t('sms_authentication.sms_messages.mention')
     when 2
-      type = 'Reply'
+      type = I18n.t('sms_authentication.sms_messages.reply')
     when 6
-      type = 'Private Message'
+      type = I18n.t('sms_authentication.sms_messages.pm')
     else
       return
     end
     url = "#{Discourse.base_protocol}://#{Discourse.current_hostname}#{payload[:post_url]}"
-    message = "New #{type} from #{payload[:username]}: #{url}"
+    message = "#{I18n.t('sms_authentication.sms_messages.notification', type: type, user: payload[:username])}#{url}"
 
     # Send SMS using provider
     sms = SmsAuthentication::SmsProvider::Provider.new

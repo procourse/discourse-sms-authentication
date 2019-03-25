@@ -31,3 +31,10 @@ en:
         title: "Phone Number"
         valid: "Phone number valid!"
         invalid: "Invalid Phone Number (numbers only)"
+  sms_authentication:
+    sms_messages:
+      activation: "Activate your %{title} account: "
+      mention: "Mention"
+      reply: "Reply"
+      pm: "Private Message"
+      notification: "New %{type} from %{user}: "
