@@ -8,10 +8,17 @@ plugins:
     default: "Twilio"
     choices:
       - "Twilio"
+      - "Africa's Talking"
   discourse_sms_authentication_account_sid:
     default: ""
     client: false
   discourse_sms_authentication_authtoken:
+    default: ""
+    client: false
+  discourse_sms_authentication_at_username:
+    default: ""
+    client: false
+  discourse_sms_authentication_at_apikey:
     default: ""
     client: false
   discourse_sms_authentication_send_phone:

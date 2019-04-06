@@ -9,6 +9,7 @@ enabled_site_setting :discourse_sms_authentication_enabled
 
 gem 'phonelib', '0.6.29'
 gem 'twilio-ruby', '5.21.2'
+gem 'httparty', '0.16.1'
 
 register_asset 'stylesheets/discourse-sms-authentication.scss'
 DiscoursePluginRegistry.serialized_current_user_fields << 'phone_number'

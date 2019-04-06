@@ -1,4 +1,5 @@
 require_relative 'twilio/twilio.rb'
+require_relative 'africas_talking/africas_talking.rb'
 module SmsAuthentication
   module SmsProvider
     class Provider
@@ -10,6 +11,8 @@ module SmsAuthentication
         case provider_setting
         when "Twilio"
           @provider = SmsAuthentication::SmsProvider::TwilioProvider.new
+        when "Africa's Talking"
+          @provider = SmsAuthentication::SmsProvider::AfricasTalkingProvider.new
         end
 
       end
