@@ -26,4 +26,13 @@ plugins:
     client: false
   discourse_sms_authentication_email_domain:
     default: ""
-    client: true 
+    client: true
+  discourse_sms_authentication_braze_api_key:
+    default: ""
+    client: false
+  discourse_sms_authentication_braze_campaign_id:
+    default: ""
+    client: false
+  discourse_sms_authentication_braze_url:
+    default: ""
+    client: false

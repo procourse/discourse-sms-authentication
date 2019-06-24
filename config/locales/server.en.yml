@@ -1,5 +1,5 @@
 en:
-  site_settings: 
+  site_settings:
     discourse_sms_authentication_enabled: "Enable Discourse SMS Authentication Plugin"
     discourse_sms_authentication_provider: "Select the SMS provider you wish to use"
     discourse_sms_authentication_account_sid: "Enter account SID provided by SMS provider (Twilio only)"
@@ -8,3 +8,6 @@ en:
     discourse_sms_authentication_at_apikey: "Enter the account API key (Africa's Talking only)"
     discourse_sms_authentication_send_phone: "Enter the phone number your SMS provider uses to send messages (include country code without the +) (required for Twilio only)"
     discourse_sms_authentication_email_domain: "Enter the domain to which Discourse emails should be routed. Emails will be sent to discourse+phone_number@email_domain (i.e. discourse+123456789@example.com)."
+    discourse_sms_authentication_braze_api_key: "Enter the api key for Braze"
+    discourse_sms_authentication_braze_campaign_id: "Enter the campaign id for Braze"
+    discourse_sms_authentication_braze_url: "Enter the url for Braze"
